@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-read --allow-write --allow-net --allow-env src/main.ts",
+    "start": "deno run --allow-read --allow-write --allow-net  --allow-env --cached-only src/main.ts"
+  },
+  "imports": {
+    "./": "./",
+    "@jsforce/jsforce-node": "npm:@jsforce/jsforce-node@^3.10.24",
+    "@panva/jose": "jsr:@panva/jose@^6.2.10",
+    "@std/fs": "jsr:@std/fs@^1.0.24",
+    "@std/path": "jsr:@std/path@^1.1.6"
+  }
+}
