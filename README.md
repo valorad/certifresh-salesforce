@@ -75,9 +75,17 @@ Example
 }
 ```
 
+## Run
+
+```
+deno task start
+```
+
 ## Build
 
-Run `bash build.sh`
+```
+bash build.sh
+```
 
 The compressed file can be found in `artifacts` folder.
 

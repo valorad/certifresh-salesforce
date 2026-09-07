@@ -30,7 +30,7 @@ cp "${SCRIPT_DIR}/deno.lock" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/README.md" "${DIST_DIR}/"
 
 echo "Creating archive ${ARCHIVE_NAME}..."
-tar -czf "${ARCHIVE_PATH}" -C "${SCRIPT_DIR}" dist
+tar -czf "${ARCHIVE_PATH}" -C "${DIST_DIR}" .
 
 echo "Generating SHA-256 checksum..."
 sha256sum "${ARCHIVE_PATH}" > "${CHECKSUM_PATH}"

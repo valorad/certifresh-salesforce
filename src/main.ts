@@ -32,7 +32,21 @@ class Main {
     null;
 
   public async run(): Promise<ICertRefreshReport> {
-    this.certRefreshRequestMap = await this.readCertRefreshRequests();
+    const certRefreshRequestMap = await this.readCertRefreshRequests();
+
+    // if no requests found, write empty report and throw error
+    if (certRefreshRequestMap.size <= 0) {
+      const report: ICertRefreshReport = {
+        message: "No certificate refresh requests found.",
+        successful: {},
+        failed: {},
+      };
+
+      await this.writeReportFile(report, false);
+      throw new Error(report.message);
+    }
+
+    this.certRefreshRequestMap = certRefreshRequestMap;
 
     // login to instances
     this.salesforceConnectionMap = await this.getSalesforceConnections(
@@ -77,12 +91,7 @@ class Main {
       }
     }
 
-    // Write report to OUTPUT folder
-    const outputFolderPath = join(this.currentWorkDir, "OUTPUT");
-    await ensureDir(outputFolderPath);
-    const successFilePath = join(outputFolderPath, "success.json");
-    const errorFilePath = join(outputFolderPath, "error.json");
-
+    // Write report
     const report: ICertRefreshReport = {
       message: "",
       successful: Object.fromEntries(instanceSuccessfulResultMap),
@@ -90,17 +99,15 @@ class Main {
     };
 
     if (errorResultCount > 0) {
-      // Some certificate updates failed.
+      // Some failed.
       const message = `Failed to update ${errorResultCount} certificate(s).`;
       report.message = message;
-      const reportJson = JSON.stringify(report, null, 2);
-      await Deno.writeTextFile(errorFilePath, reportJson);
+      await this.writeReportFile(report, false);
       throw new Error(message);
     } else {
-      // All certificate updates succeeded.
+      // All succeeded.
       report.message = "All certificate updates succeeded.";
-      const reportJson = JSON.stringify(report, null, 2);
-      await Deno.writeTextFile(successFilePath, reportJson);
+      await this.writeReportFile(report, true);
     }
 
     return report;
@@ -112,6 +119,14 @@ class Main {
       string,
       ISalesforceCertRefreshRequest
     >();
+
+    // if INPUT folder does not exist, skip reading requests and return empty map
+    if (!(await exists(inputFolderPath))) {
+      console.warn(
+        `INPUT folder does not exist at path: ${inputFolderPath}.`,
+      );
+      return certRefreshRequests;
+    }
 
     for await (const entry of Deno.readDir(inputFolderPath)) {
       if (entry.isDirectory) {
@@ -353,6 +368,20 @@ class Main {
     }
 
     return resultMap;
+  };
+
+  private writeReportFile = async (report: ICertRefreshReport, okay = true) => {
+    const outputFolderPath = join(this.currentWorkDir, "OUTPUT");
+    await ensureDir(outputFolderPath);
+    const successFilePath = join(outputFolderPath, "success.json");
+    const errorFilePath = join(outputFolderPath, "error.json");
+
+    const reportJson = JSON.stringify(report, null, 2);
+    if (okay) {
+      await Deno.writeTextFile(successFilePath, reportJson);
+    } else {
+      await Deno.writeTextFile(errorFilePath, reportJson);
+    }
   };
 }
 
