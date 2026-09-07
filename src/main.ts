@@ -11,6 +11,7 @@ import type {
 
 interface IUpdateCertificateResult {
   appApiName: string;
+  appType: ITargetAppDefinition["type"];
   okay: boolean;
   message?: string | null;
 }
@@ -200,6 +201,10 @@ class Main {
     );
   };
 
+  private buildAppResultKey = (app: ITargetAppDefinition): string => {
+    return `${app.type}::${app.metadataApiName}`;
+  };
+
   /**
    * @param instanceName Registered instance name. Folder name inside `INPUT` folder.
    * @returns Connection object to Salesforce org
@@ -265,17 +270,18 @@ class Main {
    * Replace certificates for the given apps in the specified Salesforce instance.
    * @param instanceName Registered instance name.
    * @param apps List of target apps to update certificates for.
-   * @returns A map of app API names to their update results.
+   * @returns A map of appType::appApiName to their update results.
    */
   private replaceCertificates = async (
     instanceName: string,
     apps: ITargetAppDefinition[],
   ): Promise<Map<string, IUpdateCertificateResult>> => {
-    /** appApiName => IUpdateCertificateResult */
+    /** appType::appApiName => IUpdateCertificateResult */
     const resultMap = new Map<string, IUpdateCertificateResult>();
     for (const app of apps) {
-      resultMap.set(app.metadataApiName, {
+      resultMap.set(this.buildAppResultKey(app), {
         appApiName: app.metadataApiName,
+        appType: app.type,
         okay: false,
         message: null,
       });
@@ -292,7 +298,7 @@ class Main {
     }
 
     for (const app of apps) {
-      const appCertUpdateResult = resultMap.get(app.metadataApiName)!;
+      const appCertUpdateResult = resultMap.get(this.buildAppResultKey(app))!;
 
       const certFilePath = join(
         this.currentWorkDir,
