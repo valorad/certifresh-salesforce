@@ -19,7 +19,69 @@ Expecting:
 
 ## Output
 
-TBD
+success.json / error.json with an object, type of `ICertRefreshReport`.
+
+```typescript
+interface IUpdateCertificateResult {
+  appApiName: string;
+  appType: "CONNECTED_APP" | "EXTERNAL_CLIENT_APP";
+  okay: boolean;
+  message?: string | null;
+}
+
+interface ICertRefreshReport {
+  message: string;
+  successful: Record<string, IUpdateCertificateResult[]>;
+  failed: Record<string, IUpdateCertificateResult[]>;
+}
+```
+
+Example
+
+```jsonc
+{
+  "message": "All certificate updates succeeded.",
+  "successful": {
+    "myAwesomeOrgA": [
+      {
+        "appApiName": "app1",
+        "appType": "EXTERNAL_CLIENT_APP",
+        "okay": true,
+        "message": null
+      },
+      {
+        "appApiName": "app2",
+        "appType": "CONNECTED_APP",
+        "okay": true,
+        "message": null
+      }
+    ],
+    "myAwesomeOrgB": [
+      {
+        "appApiName": "app1",
+        "appType": "EXTERNAL_CLIENT_APP",
+        "okay": true,
+        "message": null
+      },
+      {
+        "appApiName": "app2",
+        "appType": "CONNECTED_APP",
+        "okay": true,
+        "message": null
+      }
+    ]
+  },
+  "failed": {}
+}
+```
+
+## Build
+
+Run `bash build.sh`
+
+The compressed file can be found in `artifacts` folder.
+
+It can later be uploaded to S3 storage manually, and used by Windmill.
 
 ## Notes
 

@@ -13,3 +13,5 @@ coverage/
 # Site specific
 INPUT/**
 OUTPUT/**
+dist/**
+artifacts/**
