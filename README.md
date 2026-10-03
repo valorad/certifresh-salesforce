@@ -63,14 +63,14 @@ Example
     "myAwesomeOrgA": [
       {
         "appApiName": "app1",
-        "certCommonName": "myAwesomeOrgA_app1",
+        "prefixedCommonName": "myAwesomeOrgA_app1",
         "appType": "EXTERNAL_CLIENT_APP",
         "okay": true,
         "message": null
       },
       {
         "appApiName": "app2",
-        "certCommonName": "myAwesomeOrgA_app2",
+        "prefixedCommonName": "myAwesomeOrgA_app2",
         "appType": "CONNECTED_APP",
         "okay": true,
         "message": null
@@ -79,14 +79,14 @@ Example
     "myAwesomeOrgB": [
       {
         "appApiName": "app0",
-        "certCommonName": "myAwesomeOrgB_app0",
+        "prefixedCommonName": "myAwesomeOrgB_app0",
         "appType": "EXTERNAL_CLIENT_APP",
         "okay": true,
         "message": null
       },
       {
         "appApiName": "app0",
-        "certCommonName": "myAwesomeOrgB_app0",
+        "prefixedCommonName": "myAwesomeOrgB_app0",
         "appType": "CONNECTED_APP",
         "okay": true,
         "message": null
