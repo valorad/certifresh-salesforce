@@ -5,22 +5,11 @@ import jsforce from "@jsforce/jsforce-node";
 import { importPKCS8, SignJWT } from "@panva/jose";
 
 import type {
+  ICertRefreshReport,
+  ICertRefreshReportItem,
   ISalesforceCertRefreshRequest,
   ITargetAppDefinition,
 } from "./model.ts";
-
-interface IUpdateCertificateResult {
-  appApiName: string;
-  appType: ITargetAppDefinition["type"];
-  okay: boolean;
-  message?: string | null;
-}
-
-interface ICertRefreshReport {
-  message: string;
-  successful: Record<string, IUpdateCertificateResult[]>;
-  failed: Record<string, IUpdateCertificateResult[]>;
-}
 
 class Main {
   private currentWorkDir = Deno.cwd();
@@ -55,11 +44,11 @@ class Main {
 
     const instanceSuccessfulResultMap: Map<
       string,
-      IUpdateCertificateResult[]
+      ICertRefreshReportItem[]
     > = new Map();
     const instanceFailedResultMap: Map<
       string,
-      IUpdateCertificateResult[]
+      ICertRefreshReportItem[]
     > = new Map();
     let errorResultCount = 0;
 
@@ -217,7 +206,7 @@ class Main {
   };
 
   private buildAppResultKey = (app: ITargetAppDefinition): string => {
-    return `${app.type}::${app.metadataApiName}`;
+    return `${app.type || "EXTERNAL_CLIENT_APP"}::${app.metadataApiName}`;
   };
 
   /**
@@ -290,13 +279,14 @@ class Main {
   private replaceCertificates = async (
     instanceName: string,
     apps: ITargetAppDefinition[],
-  ): Promise<Map<string, IUpdateCertificateResult>> => {
+  ): Promise<Map<string, ICertRefreshReportItem>> => {
     /** appType::appApiName => IUpdateCertificateResult */
-    const resultMap = new Map<string, IUpdateCertificateResult>();
+    const resultMap = new Map<string, ICertRefreshReportItem>();
     for (const app of apps) {
       resultMap.set(this.buildAppResultKey(app), {
         appApiName: app.metadataApiName,
-        appType: app.type,
+        prefixedCommonName: app.prefixedCommonName,
+        appType: app.type || "EXTERNAL_CLIENT_APP",
         okay: false,
         message: null,
       });
@@ -314,12 +304,14 @@ class Main {
 
     for (const app of apps) {
       const appCertUpdateResult = resultMap.get(this.buildAppResultKey(app))!;
+      // Note: Using leaf.crt, as Salesforce requires leaf certificates for Connected Apps and External Client Apps.
+      const certFileName = `${app.prefixedCommonName}.leaf.crt`;
 
       const certFilePath = join(
         this.currentWorkDir,
         "INPUT",
         instanceName,
-        app.certFileName,
+        certFileName,
       );
 
       let certificateText: string;
